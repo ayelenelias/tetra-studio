@@ -17,6 +17,30 @@ var ROOT = __dirname;
 // Ej.  DATA_FILE=/data/data.json   (con disco montado en /data)
 var DATA_FILE = process.env.DATA_FILE || process.env.DATA_PATH || path.join(ROOT, 'data.json');
 
+/* ─── SUPABASE (Postgres persistente) ───
+   Si definís SUPABASE_URL + SUPABASE_KEY, el CMS guarda/lee
+   desde Supabase (persistente PARA SIEMPRE, hasta en Render free).
+   De lo contrario usa data.json (disco).
+   Tabla:  tetra_cms (columnas: id int, data jsonb, updated_at timestamptz)
+*/
+var SUPABASE_URL = process.env.SUPABASE_URL || '';
+var SUPABASE_KEY = process.env.SUPABASE_KEY || '';
+var SUPABASE_TABLE = process.env.SUPABASE_TABLE || 'tetra_cms';
+var SUPABASE_READY = !!(SUPABASE_URL && SUPABASE_KEY);
+
+function supabaseEndpoint(path) {
+    var base = String(SUPABASE_URL).replace(/\/+$/, '');
+    return base + '/rest/v1/' + SUPABASE_TABLE + path;
+}
+function supabaseHeaders() {
+    return {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+    };
+}
+
 var MIME = {
     '.html': 'text/html; charset=utf-8',
     '.css': 'text/css; charset=utf-8',
