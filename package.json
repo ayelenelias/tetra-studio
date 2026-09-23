@@ -1,0 +1,14 @@
+{
+  "name": "tetra-studio",
+  "version": "1.0.0",
+  "description": "TETRA STUDIO — CMS con backend Node.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

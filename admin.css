@@ -1,0 +1,499 @@
+/* ═══════════════════════════════════════════════════════
+   TETRA STUDIO — Admin Panel
+   ═══════════════════════════════════════════════════════ */
+
+/* --- ADMIN LOGIN --- */
+.admin-login {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+}
+
+.admin-login.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.admin-login__box {
+    background: #F8F9F8;
+    padding: 48px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.admin-login__title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: #797877;
+    margin-bottom: 32px;
+}
+
+.admin-login__input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: white;
+    font-family: 'Futura', 'Inter', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.admin-login__input:focus {
+    border-color: #000;
+}
+
+.admin-login__btn {
+    width: 100%;
+    padding: 14px;
+    background: #000;
+    color: #F8F9F8;
+    font-family: 'Futura', 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.admin-login__btn:hover {
+    background: #4A4A4A;
+}
+
+.admin-login__error {
+    font-size: 0.7rem;
+    color: #c00;
+    margin-top: 12px;
+    display: none;
+}
+
+.admin-login__error.show {
+    display: block;
+}
+
+/* --- ADMIN TRIGGER BUTTON --- */
+.admin-trigger {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    width: 48px;
+    height: 48px;
+    background: #000;
+    color: #F8F9F8;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    opacity: 0.3;
+}
+
+.admin-trigger:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* --- ADMIN PANEL --- */
+.admin-panel {
+    position: fixed;
+    top: 0;
+    right: -520px;
+    width: 520px;
+    height: 100vh;
+    background: #F8F9F8;
+    z-index: 10001;
+    transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+}
+
+.admin-panel.active {
+    right: 0;
+}
+
+.admin-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    background: white;
+    flex-shrink: 0;
+}
+
+.admin-panel__header-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #000;
+}
+
+.admin-panel__close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #4A4A4A;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.admin-panel__close:hover {
+    color: #000;
+}
+
+/* --- ADMIN TABS --- */
+.admin-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    background: white;
+    flex-shrink: 0;
+    overflow-x: auto;
+}
+
+.admin-tab {
+    padding: 12px 20px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: #797877;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.admin-tab:hover {
+    color: #000;
+}
+
+.admin-tab.active {
+    color: #000;
+    border-bottom-color: #000;
+}
+
+/* --- ADMIN BODY --- */
+.admin-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    padding-bottom: 80px;
+}
+
+/* --- ADMIN FOOTER --- */
+.admin-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    background: white;
+    flex-shrink: 0;
+}
+
+.admin-section {
+    display: none;
+}
+
+.admin-section.active {
+    display: block;
+}
+
+/* --- ADMIN FORM GROUP --- */
+.admin-group {
+    margin-bottom: 20px;
+}
+
+.admin-group__label {
+    display: block;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: #797877;
+    margin-bottom: 8px;
+}
+
+.admin-group__input,
+.admin-group__textarea,
+.admin-group__select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: white;
+    font-family: 'Futura', 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: #000;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.admin-group__input:focus,
+.admin-group__textarea:focus,
+.admin-group__select:focus {
+    border-color: #000;
+}
+
+.admin-group__textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.admin-group__select {
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+/* --- ADMIN IMAGE UPLOAD --- */
+.admin-image-upload {
+    position: relative;
+    border: 2px dashed rgba(0,0,0,0.12);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: white;
+}
+
+.admin-image-upload:hover {
+    border-color: #000;
+}
+
+.admin-image-upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.admin-image-upload__preview {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    margin-bottom: 12px;
+}
+
+.admin-image-upload__text {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: #797877;
+}
+
+.admin-image-upload__text strong {
+    color: #000;
+}
+
+/* --- ADMIN CARDS --- */
+.admin-card {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.06);
+    padding: 20px;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.admin-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.admin-card__title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.admin-card__delete {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: #c00;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: all 0.3s;
+}
+
+.admin-card__delete:hover {
+    background: #c00;
+    color: white;
+}
+
+/* --- ADMIN GRID --- */
+.admin-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* --- ADMIN BUTTONS --- */
+.admin-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    font-family: 'Futura', 'Inter', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.admin-btn--primary {
+    background: #000;
+    color: #F8F9F8;
+}
+
+.admin-btn--primary:hover {
+    background: #4A4A4A;
+}
+
+.admin-btn--secondary {
+    background: transparent;
+    color: #000;
+    border: 1px solid rgba(0,0,0,0.15);
+}
+
+.admin-btn--secondary:hover {
+    border-color: #000;
+}
+
+.admin-btn--danger {
+    background: #c00;
+    color: white;
+}
+
+.admin-btn--danger:hover {
+    background: #a00;
+}
+
+.admin-btn--success {
+    background: #2a7d2a;
+    color: white;
+}
+
+.admin-btn--success:hover {
+    background: #1f5f1f;
+}
+
+.admin-btn--full {
+    width: 100%;
+    justify-content: center;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+/* --- ADMIN SECTION TITLE --- */
+.admin-section-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #797877;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+/* --- ADMIN STATUS --- */
+.admin-status {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 10002;
+    padding: 12px 20px;
+    background: #2a7d2a;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+}
+
+.admin-status.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.admin-status.error {
+    background: #c00;
+}
+
+/* --- ADMIN OVERLAY --- */
+.admin-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+}
+
+.admin-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* --- EDITABLE HIGHLIGHT --- */
+body.admin-mode [data-editable]:hover {
+    outline: 2px dashed rgba(0,212,255,0.5);
+    outline-offset: 4px;
+    cursor: pointer;
+}
+
+body.admin-mode [data-editable-img]:hover {
+    outline: 2px dashed rgba(255,100,100,0.5);
+    outline-offset: 4px;
+    cursor: pointer;
+}
+
+/* --- SCROLLBAR --- */
+.admin-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.admin-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-body::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.15);
+    border-radius: 2px;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 640px) {
+    .admin-panel {
+        width: 100%;
+        right: -100%;
+    }
+
+    .admin-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}

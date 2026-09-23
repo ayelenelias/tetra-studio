@@ -1,0 +1,16 @@
+# Dependencias (no hay, Node puro — pero por si acaso)
+node_modules/
+
+# Logs / temporales
+*.log
+npm-debug.log*
+
+# Bases de datos locales del backend
+# OJO: data.json es el alma del CMS. Si NO lo incluís,
+# cada deploy de Render lo perderá (disco efímero).
+# Recomendado: SIEMPRE versionarlo (NO incluir aquí).
+# data.json
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
