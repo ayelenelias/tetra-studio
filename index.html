@@ -7,14 +7,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2.1">
+    <link rel="stylesheet" href="admin.css?v=2.1">
 </head>
 <body>
 
     <!-- HEADER -->
     <header class="header" id="header">
         <div class="header__inner">
-            <a href="#" class="header__logo">
+            <a href="#hero" class="header__logo">
                 <img src="logos/TETRAlogSF.png" alt="Tetra Studio" class="tetra-symbol">
             </a>
             <nav class="header__nav" id="mainNav">
@@ -24,7 +25,7 @@
                 <a href="#proyectos" class="header__nav-link">PROYECTOS</a>
                 <a href="#contacto" class="header__nav-link">CONTACTO</a>
             </nav>
-            <a href="#contacto" class="header__cta">HABLEMOS <span>&rarr;</span></a>
+            <a href="https://wa.me/5493815456354" target="_blank" rel="noopener" class="header__cta">HABLEMOS <span>&rarr;</span></a>
             <button class="header__burger" id="burgerBtn" aria-label="Menu">
                 <span></span>
                 <span></span>
@@ -42,9 +43,9 @@
                 <a href="#proyectos" class="mobile-menu__link">PROYECTOS</a>
                 <a href="#contacto" class="mobile-menu__link">CONTACTO</a>
             </nav>
-            <a href="#contacto" class="mobile-menu__cta">HABLEMOS &rarr;</a>
+            <a href="https://wa.me/5493815456354" target="_blank" rel="noopener" class="mobile-menu__cta">HABLEMOS &rarr;</a>
             <div class="mobile-menu__symbol">
-                <img src="logos/TETRAlogSF.png" alt="" class="tetra-symbol">
+                <a href="#hero"><img src="logos/TETRAlogSF.png" alt="Tetra Studio" class="tetra-symbol"></a>
             </div>
         </div>
     </div>
@@ -60,18 +61,14 @@
                 <span class="hero__title-line">STUDIO</span>
             </div>
             <div class="hero__subtitle" data-reveal data-delay="200">
-                <span>WE CREATE</span>
-                <span>IDENTITIES.</span>
-                <span>WE CREATE</span>
-                <span>CONTENT.</span>
+                <span>CREAMOS</span>
+                <span>IDENTIDADES.</span>
+                <span>CREAMOS</span>
+                <span>CONTENIDO.</span>
             </div>
             <p class="hero__description" data-reveal data-delay="400">
-                Creative studio focused on brands, design<br>and visual communication.
+                Estudio creativo centrado en marcas, dise&ntilde;o, desarrollo y creaci&oacute;n de contenido.
             </p>
-        </div>
-        <div class="hero__scroll" data-reveal data-delay="600">
-            <span>SCROLL TO EXPLORE</span>
-            <span class="hero__scroll-arrow">&darr;</span>
         </div>
     </section>
 
@@ -89,9 +86,9 @@
             </div>
             <div class="intro__right" data-reveal data-delay="200">
                 <p class="intro__text">
-                    Tetra Studio combina estrategia, diseño, contenido y comunicación para transformar ideas en marcas relevantes y experiencias visuales memorables.
+                    En TETRA unimos tecnolog&iacute;a, creatividad y estrategia para convertir ideas en soluciones digitales, marcas y experiencias que generan impacto.
                 </p>
-                <a href="#estudio" class="btn btn--outline">CONOC&Eacute; TETRA <span>&rarr;</span></a>
+                <a href="#about" class="btn btn--outline">CONOC&Eacute; TETRA <span>&rarr;</span></a>
             </div>
         </div>
     </section>
@@ -100,45 +97,45 @@
     <section class="services" id="servicios">
         <div class="services__inner">
             <h2 class="services__title" data-reveal>
-                <span>WHAT</span>
-                <span>WE DO</span>
+                <span>&iquest;QUE</span>
+                <span>REALIZAMOS?</span>
             </h2>
             <div class="services__list">
                 <div class="services__item" data-reveal data-delay="0">
                     <span class="services__number">01</span>
                     <h3 class="services__name">BRANDING</h3>
                     <p class="services__desc">Identidad visual, estrategia y construcci&oacute;n de marca.</p>
-                    <div class="services__hover-img" style="background-image: url('https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80')"></div>
+                    <div class="services__hover-img" style="background-image: url('uploads/service-branding.jpg')"></div>
                 </div>
                 <div class="services__item" data-reveal data-delay="100">
                     <span class="services__number">02</span>
-                    <h3 class="services__name">ART DIRECTION</h3>
-                    <p class="services__desc">Conceptualizaci&oacute;n y direcci&oacute;n visual.</p>
-                    <div class="services__hover-img" style="background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80')"></div>
+                    <h3 class="services__name">DESARROLLO</h3>
+                    <p class="services__desc">Desarrollo de software, sistemas, automatizaciones.</p>
+                    <div class="services__hover-img" style="background-image: url('uploads/service-branding.jpg')"></div>
                 </div>
                 <div class="services__item" data-reveal data-delay="200">
                     <span class="services__number">03</span>
-                    <h3 class="services__name">GRAPHIC DESIGN</h3>
-                    <p class="services__desc">Dise&ntilde;o gr&aacute;fico y sistemas visuales.</p>
-                    <div class="services__hover-img" style="background-image: url('https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=800&q=80')"></div>
+                    <h3 class="services__name">WEB</h3>
+                    <p class="services__desc">Landing pages, sitios web, tiendas online.</p>
+                    <div class="services__hover-img" style="background-image: url('uploads/service-branding.jpg')"></div>
                 </div>
                 <div class="services__item" data-reveal data-delay="300">
                     <span class="services__number">04</span>
-                    <h3 class="services__name">CONTENT CREATION</h3>
+                    <h3 class="services__name">CREACI&Oacute;N DE CONTENIDO</h3>
                     <p class="services__desc">Producci&oacute;n de contenido para marcas.</p>
-                    <div class="services__hover-img" style="background-image: url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&q=80')"></div>
+                    <div class="services__hover-img" style="background-image: url('uploads/service-branding.jpg')"></div>
                 </div>
                 <div class="services__item" data-reveal data-delay="400">
                     <span class="services__number">05</span>
-                    <h3 class="services__name">SOCIAL MEDIA</h3>
-                    <p class="services__desc">Contenido y comunicaci&oacute;n para plataformas digitales.</p>
-                    <div class="services__hover-img" style="background-image: url('https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80')"></div>
+                    <h3 class="services__name">GESTI&Oacute;N DE REDES</h3>
+                    <p class="services__desc">Manejamos tus redes para mayor alcance.</p>
+                    <div class="services__hover-img" style="background-image: url('uploads/service-branding.jpg')"></div>
                 </div>
                 <div class="services__item" data-reveal data-delay="500">
                     <span class="services__number">06</span>
-                    <h3 class="services__name">CAMPAIGNS</h3>
-                    <p class="services__desc">Campa&ntilde;as creativas y piezas publicitarias.</p>
-                    <div class="services__hover-img" style="background-image: url('https://images.unsplash.com/photo-1533750349088-cd871a92f17e?w=800&q=80')"></div>
+                    <h3 class="services__name">MARKETING</h3>
+                    <p class="services__desc">Estrategias, publicidades, conexion con influencers.</p>
+                    <div class="services__hover-img" style="background-image: url('uploads/service-branding.jpg')"></div>
                 </div>
             </div>
         </div>
@@ -155,7 +152,7 @@
             </div>
             <div class="creators__header-right" data-reveal data-delay="200">
                 <p class="creators__intro-text">
-                    Conectamos marcas con creators seleccionados para producir contenido aut&eacute;ntico, relevante y alineado con cada identidad.
+                    Conectamos marcas con creators seleccionadas para producir contenido aut&eacute;ntico, relevante y alineado con cada identidad.
                 </p>
             </div>
         </div>
@@ -200,123 +197,51 @@
 
         <!-- CATALOG GRID -->
         <div class="creators__catalog" id="creatorsCatalog">
-            <div class="creator-card" data-category="fashion,ugc" data-location="tucuman" data-reveal>
+            <div class="creator-card" data-category="todos" data-location="tucuman" data-instagram="supercuutee" data-reveal>
                 <div class="creator-card__img">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80" alt="Sofia" loading="lazy">
+                    <img src="uploads/creator-sol.jpg" alt="SOL" loading="lazy">
                     <div class="creator-card__symbol">
                         <img src="logos/TETRAlogSF.png" alt="">
                     </div>
                 </div>
                 <div class="creator-card__info">
-                    <h4 class="creator-card__name">SOF&Iacute;A</h4>
+                    <h4 class="creator-card__name">SOL</h4>
                     <span class="creator-card__role">CONTENT CREATOR</span>
-                    <span class="creator-card__cats">BEAUTY / FASHION / LIFESTYLE</span>
+                    <span class="creator-card__cats">TODOS</span>
                     <span class="creator-card__loc">TUCUM&Aacute;N</span>
+                    <a href="https://www.instagram.com/supercuutee/" target="_blank" rel="noopener" class="creator-card__instagram" onclick="event.stopPropagation()">@supercuutee <span>&nearr;</span></a>
                 </div>
             </div>
 
-            <div class="creator-card" data-category="fashion,ugc,lifestyle" data-location="buenos-aires" data-reveal data-delay="100">
+            <div class="creator-card" data-category="todos" data-location="buenos-aires" data-instagram="lourmorales" data-reveal data-delay="100">
                 <div class="creator-card__img">
-                    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&q=80" alt="Martina" loading="lazy">
+                    <img src="uploads/creator-lour.jpg" alt="LOUR" loading="lazy">
                     <div class="creator-card__symbol">
                         <img src="logos/TETRAlogSF.png" alt="">
                     </div>
                 </div>
                 <div class="creator-card__info">
-                    <h4 class="creator-card__name">MARTINA</h4>
+                    <h4 class="creator-card__name">LOUR</h4>
                     <span class="creator-card__role">CONTENT CREATOR</span>
-                    <span class="creator-card__cats">FASHION / UGC / LIFESTYLE</span>
-                    <span class="creator-card__loc">BUENOS AIRES</span>
-                </div>
-            </div>
-
-            <div class="creator-card" data-category="beauty,ugc,travel" data-location="cordoba" data-reveal data-delay="200">
-                <div class="creator-card__img">
-                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&q=80" alt="Valentina" loading="lazy">
-                    <div class="creator-card__symbol">
-                        <img src="logos/TETRAlogSF.png" alt="">
-                    </div>
-                </div>
-                <div class="creator-card__info">
-                    <h4 class="creator-card__name">VALENTINA</h4>
-                    <span class="creator-card__role">CONTENT CREATOR</span>
-                    <span class="creator-card__cats">BEAUTY / UGC / TRAVEL</span>
-                    <span class="creator-card__loc">C&Oacute;RDOBA</span>
-                </div>
-            </div>
-
-            <div class="creator-card" data-category="food,lifestyle" data-location="rosario" data-reveal data-delay="300">
-                <div class="creator-card__img">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80" alt="Camila" loading="lazy">
-                    <div class="creator-card__symbol">
-                        <img src="logos/TETRAlogSF.png" alt="">
-                    </div>
-                </div>
-                <div class="creator-card__info">
-                    <h4 class="creator-card__name">CAMILA</h4>
-                    <span class="creator-card__role">CONTENT CREATOR</span>
-                    <span class="creator-card__cats">FOOD / LIFESTYLE</span>
-                    <span class="creator-card__loc">ROSARIO</span>
-                </div>
-            </div>
-
-            <div class="creator-card" data-category="fitness,ugc" data-location="buenos-aires" data-reveal data-delay="400">
-                <div class="creator-card__img">
-                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&q=80" alt="Lucas" loading="lazy">
-                    <div class="creator-card__symbol">
-                        <img src="logos/TETRAlogSF.png" alt="">
-                    </div>
-                </div>
-                <div class="creator-card__info">
-                    <h4 class="creator-card__name">LUCAS</h4>
-                    <span class="creator-card__role">CONTENT CREATOR</span>
-                    <span class="creator-card__cats">FITNESS / UGC</span>
-                    <span class="creator-card__loc">BUENOS AIRES</span>
-                </div>
-            </div>
-
-            <div class="creator-card" data-category="product,social,fashion" data-location="tucuman" data-reveal data-delay="500">
-                <div class="creator-card__img">
-                    <img src="https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=600&q=80" alt="Isabela" loading="lazy">
-                    <div class="creator-card__symbol">
-                        <img src="logos/TETRAlogSF.png" alt="">
-                    </div>
-                </div>
-                <div class="creator-card__info">
-                    <h4 class="creator-card__name">ISABELA</h4>
-                    <span class="creator-card__role">CONTENT CREATOR</span>
-                    <span class="creator-card__cats">PRODUCT / SOCIAL MEDIA / FASHION</span>
+                    <span class="creator-card__cats">TODOS</span>
                     <span class="creator-card__loc">TUCUM&Aacute;N</span>
+                    <a href="https://www.instagram.com/lourmorales/" target="_blank" rel="noopener" class="creator-card__instagram" onclick="event.stopPropagation()">@lourmorales <span>&nearr;</span></a>
                 </div>
             </div>
 
-            <div class="creator-card" data-category="travel,lifestyle,ugc" data-location="otras" data-reveal data-delay="600">
+            <div class="creator-card" data-category="todos" data-location="tucuman" data-instagram="_maiatorress" data-reveal data-delay="200">
                 <div class="creator-card__img">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80" alt="Mateo" loading="lazy">
+                    <img src="uploads/creator-maia.jpg" alt="MAIA" loading="lazy">
                     <div class="creator-card__symbol">
                         <img src="logos/TETRAlogSF.png" alt="">
                     </div>
                 </div>
                 <div class="creator-card__info">
-                    <h4 class="creator-card__name">MATEO</h4>
+                    <h4 class="creator-card__name">MAIA</h4>
                     <span class="creator-card__role">CONTENT CREATOR</span>
-                    <span class="creator-card__cats">TRAVEL / LIFESTYLE / UGC</span>
-                    <span class="creator-card__loc">MENDOZA</span>
-                </div>
-            </div>
-
-            <div class="creator-card" data-category="beauty,social,fashion" data-location="cordoba" data-reveal data-delay="700">
-                <div class="creator-card__img">
-                    <img src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=600&q=80" alt="Lucia" loading="lazy">
-                    <div class="creator-card__symbol">
-                        <img src="logos/TETRAlogSF.png" alt="">
-                    </div>
-                </div>
-                <div class="creator-card__info">
-                    <h4 class="creator-card__name">LUC&Iacute;A</h4>
-                    <span class="creator-card__role">CONTENT CREATOR</span>
-                    <span class="creator-card__cats">BEAUTY / SOCIAL MEDIA / FASHION</span>
-                    <span class="creator-card__loc">C&Oacute;RDOBA</span>
+                    <span class="creator-card__cats">TODOS</span>
+                    <span class="creator-card__loc">TUCUM&Aacute;N</span>
+                    <a href="https://www.instagram.com/_maiatorress/" target="_blank" rel="noopener" class="creator-card__instagram" onclick="event.stopPropagation()">@_maiatorress <span>&nearr;</span></a>
                 </div>
             </div>
         </div>
@@ -360,6 +285,7 @@
                     <div class="form-group">
                         <label>TIPO DE CONTENIDO</label>
                         <select>
+                            <option value="todo">Todo</option>
                             <option>UGC</option>
                             <option>Reels</option>
                             <option>TikTok</option>
@@ -372,6 +298,7 @@
                     <div class="form-group">
                         <label>CATEGOR&Iacute;A</label>
                         <select>
+                            <option value="todos">Todos / Cualquier categor&iacute;a</option>
                             <option>Fashion</option>
                             <option>Beauty</option>
                             <option>Lifestyle</option>
@@ -379,6 +306,8 @@
                             <option>Travel</option>
                             <option>Fitness</option>
                             <option>Product</option>
+                            <option>UGC</option>
+                            <option>Social Media</option>
                         </select>
                     </div>
                 </div>
@@ -414,17 +343,17 @@
     <section class="projects" id="proyectos">
         <div class="projects__inner">
             <h2 class="projects__title" data-reveal>
-                <span>SELECTED</span>
-                <span>WORK</span>
+                <span>PROYECTOS.</span>
+                <span></span>
             </h2>
             <div class="projects__grid">
                 <div class="project-item project-item--large" data-reveal>
                     <div class="project-item__img">
-                        <img src="https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=1200&q=80" alt="Project" loading="lazy">
+                        <img src="uploads/project-cafs.jpg" alt="CAFS" loading="lazy">
                     </div>
                     <div class="project-item__info">
-                        <span class="project-item__name">LUMI&Eacute;RE</span>
-                        <span class="project-item__type">BRANDING</span>
+                        <span class="project-item__name">CAFS</span>
+                        <span class="project-item__type">PAGINA WEB</span>
                         <span class="project-item__year">2026</span>
                     </div>
                     <div class="project-item__symbol">
@@ -433,11 +362,11 @@
                 </div>
                 <div class="project-item project-item--tall" data-reveal data-delay="100">
                     <div class="project-item__img">
-                        <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80" alt="Project" loading="lazy">
+                        <img src="uploads/project-cukies.jpg" alt="CUKIES" loading="lazy">
                     </div>
                     <div class="project-item__info">
-                        <span class="project-item__name">VERDE</span>
-                        <span class="project-item__type">CONTENT</span>
+                        <span class="project-item__name">CUKIES</span>
+                        <span class="project-item__type">BRANDING</span>
                         <span class="project-item__year">2026</span>
                     </div>
                     <div class="project-item__symbol">
@@ -446,12 +375,12 @@
                 </div>
                 <div class="project-item" data-reveal data-delay="200">
                     <div class="project-item__img">
-                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&q=80" alt="Project" loading="lazy">
+                        <img src="uploads/project-confimed.jpg" alt="CONFIMED" loading="lazy">
                     </div>
                     <div class="project-item__info">
-                        <span class="project-item__name">FORMA</span>
-                        <span class="project-item__type">CAMPAIGN</span>
-                        <span class="project-item__year">2025</span>
+                        <span class="project-item__name">CONFIMED</span>
+                        <span class="project-item__type">SISTEMA</span>
+                        <span class="project-item__year">2026</span>
                     </div>
                     <div class="project-item__symbol">
                         <img src="logos/TETRAlogSF.png" alt="">
@@ -459,25 +388,12 @@
                 </div>
                 <div class="project-item project-item--wide" data-reveal data-delay="300">
                     <div class="project-item__img">
-                        <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200&q=80" alt="Project" loading="lazy">
+                        <img src="uploads/project-laboratorio-suizo.jpg" alt="LABORATORIO SUIZO" loading="lazy">
                     </div>
                     <div class="project-item__info">
-                        <span class="project-item__name">NØVA</span>
-                        <span class="project-item__type">BRANDING / CONTENT</span>
-                        <span class="project-item__year">2025</span>
-                    </div>
-                    <div class="project-item__symbol">
-                        <img src="logos/TETRAlogSF.png" alt="">
-                    </div>
-                </div>
-                <div class="project-item project-item--tall" data-reveal data-delay="400">
-                    <div class="project-item__img">
-                        <img src="https://images.unsplash.com/photo-1533750349088-cd871a92f17e?w=600&q=80" alt="Project" loading="lazy">
-                    </div>
-                    <div class="project-item__info">
-                        <span class="project-item__name">aura</span>
-                        <span class="project-item__type">CAMPAIGN</span>
-                        <span class="project-item__year">2025</span>
+                        <span class="project-item__name">LABORATORIO SUIZO</span>
+                        <span class="project-item__type">SISTEMA</span>
+                        <span class="project-item__year">2026</span>
                     </div>
                     <div class="project-item__symbol">
                         <img src="logos/TETRAlogSF.png" alt="">
@@ -488,89 +404,83 @@
     </section>
 
     <!-- MANIFESTO -->
-    <section class="manifesto">
+    <section class="manifesto" id="manifiesto">
         <div class="manifesto__symbol">
             <img src="logos/tetralogSFblanco.png" alt="" class="tetra-symbol tetra-symbol--manifesto" data-parallax="0.1">
         </div>
         <div class="manifesto__content">
             <h2 class="manifesto__title">
-                <span data-reveal>IDEAS</span>
-                <span data-reveal data-delay="150">NEED</span>
-                <span data-reveal data-delay="300">FORM.</span>
+                <span data-reveal>LAS IDEAS</span>
+                <span data-reveal data-delay="150">NECESITAN FORMAS.</span>
             </h2>
             <div class="manifesto__words">
-                <span data-reveal data-delay="450">STRATEGY.</span>
-                <span data-reveal data-delay="550">DESIGN.</span>
-                <span data-reveal data-delay="650">CONTENT.</span>
-                <span data-reveal data-delay="750">IDENTITY.</span>
+                <span data-reveal data-delay="450">PENSAMOS.</span>
+                <span data-reveal data-delay="550">DISE&Ntilde;AMOS.</span>
+                <span data-reveal data-delay="650">DESARROLLAMOS.</span>
+                <span data-reveal data-delay="750">CONECTAMOS.</span>
             </div>
         </div>
     </section>
 
     <!-- ABOUT -->
-    <section class="about">
+    <section class="about" id="about">
         <div class="about__inner">
             <div class="about__left" data-reveal>
                 <h2 class="about__title">
-                    <span>ABOUT</span>
-                    <span>TETRA</span>
+                    <span>&iquest;QU&Eacute; ES</span>
+                    <span>TETRA?</span>
                 </h2>
             </div>
             <div class="about__right" data-reveal data-delay="200">
                 <p class="about__text">
-                    Somos un estudio creativo que trabaja entre estrategia, dise&ntilde;o, contenido y comunicaci&oacute;n.
+                    Un equipo que combina tecnolog&iacute;a, dise&ntilde;o y estrategia para transformar ideas en soluciones digitales.
                 </p>
                 <p class="about__text">
-                    Creamos identidades y experiencias visuales que ayudan a las marcas a encontrar una voz propia.
+                    Creamos sitios web, tiendas online, sistemas, automatizaciones y experiencias digitales, pero nuestro trabajo va m&aacute;s all&aacute; de desarrollar: buscamos entender cada proyecto, detectar sus necesidades y construir soluciones que realmente aporten valor.
                 </p>
-                <div class="about__images">
-                    <div class="about__img" data-reveal data-delay="300">
-                        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80" alt="Studio" loading="lazy">
-                    </div>
-                    <div class="about__img about__img--offset" data-reveal data-delay="400">
-                        <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80" alt="Studio" loading="lazy">
-                    </div>
-                </div>
+                <p class="about__text">
+                    Trabajamos de forma cercana con nuestros clientes, desde la primera idea hasta la implementaci&oacute;n, acompa&ntilde;ando cada etapa del proceso.
+                </p>
             </div>
         </div>
     </section>
 
     <!-- PROCESS -->
-    <section class="process">
+    <section class="process" id="proceso">
         <div class="process__inner">
             <h2 class="process__title" data-reveal>
-                <span>HOW</span>
-                <span>WE WORK</span>
+                <span>&iquest;C&Oacute;MO</span>
+                <span>TRABAJAMOS?</span>
             </h2>
             <div class="process__steps">
                 <div class="process__step" data-reveal>
                     <span class="process__step-num">01</span>
                     <div class="process__step-line"></div>
-                    <h3 class="process__step-name">DISCOVER</h3>
+                    <h3 class="process__step-name">DESCUBRIR</h3>
                     <p class="process__step-desc">Entendemos el contexto.</p>
                 </div>
                 <div class="process__step" data-reveal data-delay="100">
                     <span class="process__step-num">02</span>
                     <div class="process__step-line"></div>
-                    <h3 class="process__step-name">DEFINE</h3>
+                    <h3 class="process__step-name">DEFINIR</h3>
                     <p class="process__step-desc">Encontramos la direcci&oacute;n.</p>
                 </div>
                 <div class="process__step" data-reveal data-delay="200">
                     <span class="process__step-num">03</span>
                     <div class="process__step-line"></div>
-                    <h3 class="process__step-name">CREATE</h3>
+                    <h3 class="process__step-name">CREAR</h3>
                     <p class="process__step-desc">Transformamos las ideas.</p>
                 </div>
                 <div class="process__step" data-reveal data-delay="300">
                     <span class="process__step-num">04</span>
                     <div class="process__step-line"></div>
-                    <h3 class="process__step-name">LAUNCH</h3>
+                    <h3 class="process__step-name">LANZAMIENTO</h3>
                     <p class="process__step-desc">Llevamos el proyecto al mundo.</p>
                 </div>
                 <div class="process__step" data-reveal data-delay="400">
                     <span class="process__step-num">05</span>
                     <div class="process__step-line"></div>
-                    <h3 class="process__step-name">CREATE CONTENT</h3>
+                    <h3 class="process__step-name">CREACI&Oacute;N DE CONTENIDO</h3>
                     <p class="process__step-desc">Generamos contenido con creators seleccionados.</p>
                 </div>
             </div>
@@ -581,21 +491,17 @@
     </section>
 
     <!-- CLIENTS -->
-    <section class="clients">
+    <section class="clients" id="clientes">
         <div class="clients__inner">
             <h2 class="clients__title" data-reveal>
-                <span>BRANDS</span>
-                <span>WE'VE WORKED WITH</span>
+                <span>MARCAS CON</span>
+                <span>LAS QUE TRABAJAMOS.</span>
             </h2>
             <div class="clients__logos" data-reveal data-delay="200">
-                <div class="client-logo"><span>BRAND</span></div>
-                <div class="client-logo"><span>STUDIO</span></div>
-                <div class="client-logo"><span>FORMA</span></div>
-                <div class="client-logo"><span>LUXE</span></div>
-                <div class="client-logo"><span>aura</span></div>
-                <div class="client-logo"><span>N&Ocirc;VA</span></div>
-                <div class="client-logo"><span>VERDE</span></div>
-                <div class="client-logo"><span>MODA</span></div>
+                <div class="client-logo"><span>CAFS</span></div>
+                <div class="client-logo"><span>CONFIMED</span></div>
+                <div class="client-logo"><span>CUKIES</span></div>
+                <div class="client-logo"><span>LABORATORIO SUIZO</span></div>
             </div>
         </div>
     </section>
@@ -610,15 +516,15 @@
                 <img src="logos/tetralogSFblanco.png" alt="Tetra Studio" class="tetra-symbol tetra-symbol--white">
             </div>
             <h2 class="contact__title" data-reveal data-delay="100">
-                <span>LET'S</span>
-                <span>CREATE</span>
-                <span>TOGETHER.</span>
+                <span>CREEMOS</span>
+                <span>ALGO</span>
+                <span>JUNTOS.</span>
             </h2>
             <p class="contact__text" data-reveal data-delay="200">&iquest;Ten&eacute;s una idea, una marca o un proyecto?</p>
-            <a href="mailto:hola@tetra.studio" class="btn btn--white btn--large" data-reveal data-delay="300">HABLEMOS <span>&rarr;</span></a>
+            <a href="https://wa.me/5493815456354" target="_blank" rel="noopener" class="btn btn--white btn--large contact__btn-whatsapp contact__btn-email" data-reveal data-delay="300">HABLEMOS <span>&rarr;</span></a>
             <div class="contact__divider" data-reveal data-delay="350"></div>
             <p class="contact__text" data-reveal data-delay="400">LOOKING FOR A CREATOR?</p>
-            <button class="btn btn--outline-white btn--large" data-reveal data-delay="450" onclick="document.getElementById('creators').scrollIntoView({behavior:'smooth'})">FIND YOUR CREATOR <span>&rarr;</span></button>
+            <a href="#creators" class="btn btn--outline-white btn--large" data-reveal data-delay="450" id="contactFindCreatorBtn">FIND YOUR CREATOR <span>&rarr;</span></a>
         </div>
     </section>
 
@@ -640,9 +546,10 @@
                         <a href="#contacto">CONTACTO</a>
                     </div>
                     <div class="footer__col">
-                        <a href="#">Instagram</a>
-                        <a href="#">TikTok</a>
-                        <a href="mailto:tetra.studio26@gmail.com">Email</a>
+                        <a href="https://www.instagram.com/tetra.tuc/" target="_blank" rel="noopener" class="footer__link-instagram">Instagram</a>
+                        <a href="https://tiktok.com/@tetra.studio" target="_blank" rel="noopener" class="footer__link-tiktok">TikTok</a>
+                        <a href="https://wa.me/5493815456354" target="_blank" rel="noopener" class="footer__link-whatsapp">WhatsApp</a>
+                        <a href="mailto:tetra.studio26@gmail.com" class="footer__link-email">Email</a>
                     </div>
                 </div>
             </div>
@@ -652,7 +559,7 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
-    <script src="admin.js"></script>
+    <script src="script.js?v=2.1"></script>
+    <script src="admin.js?v=2.1"></script>
 </body>
 </html>
