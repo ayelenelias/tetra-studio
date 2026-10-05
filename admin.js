@@ -7,6 +7,12 @@
 
     var STORAGE_KEY = 'tetra_cms';
     var PASS = 'tetra2026';
+    var SERVER_SAVE_DELAY = 400;
+    var serverSaveTimer = null;
+    var pendingServerPayload = null;
+    var pendingServerWaiters = [];
+    var serverWriteChain = Promise.resolve();
+    var lastServerSave = Promise.resolve({ ok: false, skipped: true });
 
     // ─── DEFAULT DATA ───
     function defaults() {
@@ -137,8 +143,10 @@
         return sanitizeCreators(defaults());
     }
 
-    function save() {
+    function save(immediate) {
         var localOk = false;
+        if (!D.site) D.site = {};
+        D.site.updatedAt = new Date().toISOString();
         if (localStorageAvailable) {
             try {
                 var data = JSON.stringify(D);
@@ -149,7 +157,7 @@
                 console.warn('CMS save localStorage warning:', e.name, e.message);
             }
         }
-        serverPush(D);
+        lastServerSave = serverPush(D, !!immediate);
         return localOk || serverAvailable();
     }
 
@@ -162,40 +170,119 @@
         return typeof window.fetch === 'function';
     }
 
-    function serverPush(obj) {
-        if (!serverAvailable()) return;
+    function postToServer(url, payload) {
+        return fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload
+        }).then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status + ' en ' + url);
+            return { ok: true, endpoint: url };
+        });
+    }
+
+    function sendServerPayload(payload) {
+        return postToServer(getApiUrl(), payload).catch(function(primaryError) {
+            // Backend Node.js alternativo. En XAMPP normalmente responde api.php.
+            return postToServer('/api/data', payload).catch(function() {
+                throw primaryError;
+            });
+        });
+    }
+
+    function flushServerPush() {
+        if (serverSaveTimer) {
+            clearTimeout(serverSaveTimer);
+            serverSaveTimer = null;
+        }
+        if (!pendingServerPayload) return serverWriteChain;
+
+        var payload = pendingServerPayload;
+        var waiters = pendingServerWaiters.slice();
+        pendingServerPayload = null;
+        pendingServerWaiters = [];
+
+        // Las escrituras se encadenan para que una petición vieja nunca pueda
+        // terminar después y sobrescribir el cambio más reciente.
+        var operation = serverWriteChain.then(function() {
+            return sendServerPayload(payload);
+        }).then(function(result) {
+            return result;
+        }, function(error) {
+            console.warn('CMS server save error:', error && error.message);
+            return { ok: false, error: error };
+        });
+
+        serverWriteChain = operation;
+        operation.then(function(result) {
+            waiters.forEach(function(resolve) { resolve(result); });
+        });
+        return operation;
+    }
+
+    function serverPush(obj, immediate) {
+        if (!serverAvailable()) return Promise.resolve({ ok: false, offline: true });
         try {
-            fetch(getApiUrl(), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(obj)
-            }).then(function(r) {
-                if (!r.ok) {
-                    // Fallback a /api/data si api.php no responde
-                    return fetch('/api/data', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(obj)
-                    });
-                }
-            }).catch(function() { /* offline o sin backend: se sigue usando localStorage */ });
-        } catch (e) { /* ignorar */ }
+            pendingServerPayload = JSON.stringify(obj);
+            var queued = new Promise(function(resolve) {
+                pendingServerWaiters.push(resolve);
+            });
+            if (serverSaveTimer) clearTimeout(serverSaveTimer);
+            if (immediate) {
+                flushServerPush();
+            } else {
+                serverSaveTimer = setTimeout(flushServerPush, SERVER_SAVE_DELAY);
+            }
+            return queued;
+        } catch (e) {
+            return Promise.resolve({ ok: false, error: e });
+        }
+    }
+
+    function getUpdatedAt(obj) {
+        var value = obj && obj.site && obj.site.updatedAt;
+        var time = value ? Date.parse(value) : 0;
+        return isNaN(time) ? 0 : time;
+    }
+
+    function fetchServerData() {
+        return fetch(getApiUrl()).then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status + ' en ' + getApiUrl());
+            return r.json();
+        }).catch(function(primaryError) {
+            return fetch('/api/data').then(function(r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status + ' en /api/data');
+                return r.json();
+            }).catch(function() {
+                throw primaryError;
+            });
+        });
     }
 
     function serverSync() {
         if (!serverAvailable()) return;
-        fetch(getApiUrl())
-            .then(function(r) {
-                if (r.ok) return r.json();
-                return fetch('/api/data').then(function(r2) { return r2.ok ? r2.json() : null; });
-            })
+        fetchServerData()
             .then(function(remote) {
                 if (!remote || typeof remote !== 'object') return;
-                // El SERVER / MySQL es la fuente de verdad: cada save() POSTea el objeto completo.
+
+                var localUpdatedAt = getUpdatedAt(D);
+                var remoteUpdatedAt = getUpdatedAt(remote);
+                if (localUpdatedAt && localUpdatedAt > remoteUpdatedAt) {
+                    // Hubo un cambio local que todavía no llegó al servidor.
+                    // Se conserva y se vuelve a intentar, en lugar de perderlo.
+                    lastServerSave = serverPush(D, true);
+                    lastServerSave.then(function(result) {
+                        showStatus(result.ok ? 'Cambios recuperados y sincronizados ✓' : 'Cambios locales pendientes de sincronizar', !result.ok);
+                    });
+                    return;
+                }
+
+                // La copia más reciente es la fuente de verdad.
                 var merged = deepMerge(deepMerge(defaults(), D), remote);
                 D = sanitizeCreators(merged);
                 ensureIntroTexts();
                 ensureAboutTexts();
+                ensureAboutImages();
                 if (!D.site) D.site = {};
                 D.site.loadedFromServer = true;
                 try { localStorage.setItem(STORAGE_KEY, JSON.stringify(D)); } catch (e) {}
@@ -203,7 +290,7 @@
                 if (ui && ui.bodyEl) {
                     ui.bodyEl.innerHTML = renderTabContent(currentTab);
                 }
-                showStatus('Sincronizado con MySQL ✓');
+                showStatus('Sincronizado con servidor ✓');
             })
             .catch(function(err) {
                 console.warn('Sync notice:', err && err.message);
@@ -901,6 +988,9 @@
             document.body.style.overflow = 'hidden';
         }
         function closePanel() {
+            // Si el usuario cierra el panel durante el debounce, iniciar la
+            // escritura inmediatamente mientras la página sigue abierta.
+            flushServerPush();
             ui.panelEl.classList.remove('active');
             ui.overlayEl.classList.remove('active');
             document.body.style.overflow = '';
@@ -929,8 +1019,18 @@
 
         // ─── SAVE BUTTON ───
         $('#adminSaveBtn').addEventListener('click', function() {
-            var saved = save();
-            showStatus(saved ? 'Guardado ✓' : 'Error: no se pudo guardar', !saved);
+            var savedLocally = save(true);
+            var currentSave = lastServerSave;
+            showStatus('Guardando en servidor...');
+            currentSave.then(function(result) {
+                if (result.ok) {
+                    showStatus('Guardado y sincronizado ✓');
+                } else if (savedLocally) {
+                    showStatus('Guardado localmente; servidor no disponible', true);
+                } else {
+                    showStatus('Error: no se pudo guardar', true);
+                }
+            });
         });
 
         // ─── TABS ───
