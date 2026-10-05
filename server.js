@@ -10,6 +10,7 @@ var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var path = require('path');
+var crypto = require('crypto');
 
 var PORT = process.env.PORT || 3000;
 var ROOT = __dirname;
@@ -17,6 +18,15 @@ var ROOT = __dirname;
 // Montá un disco persistente y apuntá DATA_FILE a él con una variable de entorno.
 // Ej.  DATA_FILE=/data/data.json   (con disco montado en /data)
 var DATA_FILE = process.env.DATA_FILE || process.env.DATA_PATH || path.join(ROOT, 'data.json');
+var ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+var ADMIN_SECRET = process.env.ADMIN_SECRET || (ADMIN_PASSWORD ? crypto.createHash('sha256').update(ADMIN_PASSWORD).digest('hex') : '');
+var CONTACT_TO = process.env.CONTACT_TO || 'tetra.studio26@gmail.com';
+var CONTACT_FROM = process.env.CONTACT_FROM || '';
+var RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+var SESSION_SECONDS = 8 * 60 * 60;
+var loginAttempts = new Map();
+var contactAttempts = new Map();
+var revokedSessions = new Map();
 
 /* ─── SUPABASE (Postgres persistente) ───
    Si definís SUPABASE_URL + SUPABASE_KEY, el CMS guarda/lee
@@ -68,6 +78,190 @@ function supabaseReq(method, path, body, prefer) {
         req.setTimeout(20000, function () { req.destroy(new Error('Supabase timeout')); });
         if (body !== undefined) req.write(body);
         req.end();
+    });
+}
+
+function safeEqual(a, b) {
+    var left = Buffer.from(String(a || ''), 'utf8');
+    var right = Buffer.from(String(b || ''), 'utf8');
+    if (left.length !== right.length) return false;
+    return crypto.timingSafeEqual(left, right);
+}
+
+function base64Url(value) {
+    return Buffer.from(value).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function signAdminSession(expiresAt) {
+    var payload = String(expiresAt);
+    var signature = crypto.createHmac('sha256', ADMIN_SECRET).update(payload).digest('base64')
+        .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+    return base64Url(payload) + '.' + signature;
+}
+
+function parseCookies(req) {
+    var cookies = {};
+    String(req.headers.cookie || '').split(';').forEach(function (part) {
+        var separator = part.indexOf('=');
+        if (separator < 0) return;
+        var key = part.slice(0, separator).trim();
+        var value = part.slice(separator + 1).trim();
+        if (key) cookies[key] = value;
+    });
+    return cookies;
+}
+
+function isAdminAuthenticated(req) {
+    if (!ADMIN_SECRET) return false;
+    var token = parseCookies(req).tetra_admin;
+    if (!token) return false;
+    var revokedUntil = revokedSessions.get(token) || 0;
+    if (revokedUntil > Date.now()) return false;
+    if (revokedUntil) revokedSessions.delete(token);
+    var parts = token.split('.');
+    if (parts.length !== 2) return false;
+    var expiresText;
+    try {
+        var normalized = parts[0].replace(/-/g, '+').replace(/_/g, '/');
+        while (normalized.length % 4) normalized += '=';
+        expiresText = Buffer.from(normalized, 'base64').toString('utf8');
+    } catch (e) {
+        return false;
+    }
+    var expiresAt = parseInt(expiresText, 10);
+    if (!expiresAt || expiresAt < Date.now()) return false;
+    return safeEqual(signAdminSession(expiresAt), token);
+}
+
+function revokeAdminSession(req) {
+    var token = parseCookies(req).tetra_admin;
+    if (!token) return;
+    var parts = token.split('.');
+    if (parts.length !== 2) return;
+    try {
+        var normalized = parts[0].replace(/-/g, '+').replace(/_/g, '/');
+        while (normalized.length % 4) normalized += '=';
+        var expiresAt = parseInt(Buffer.from(normalized, 'base64').toString('utf8'), 10);
+        if (expiresAt > Date.now()) revokedSessions.set(token, expiresAt);
+    } catch (e) {}
+}
+
+function sessionCookie(req, value, maxAge) {
+    var forwardedProto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
+    var secure = forwardedProto === 'https' || !!(req.socket && req.socket.encrypted);
+    return 'tetra_admin=' + value + '; Path=/; HttpOnly; SameSite=Strict; Max-Age=' + maxAge + (secure ? '; Secure' : '');
+}
+
+function clientIp(req) {
+    var forwardedParts = String(req.headers['x-forwarded-for'] || '').split(',');
+    var forwarded = forwardedParts[forwardedParts.length - 1].trim();
+    return forwarded || (req.socket && req.socket.remoteAddress) || 'unknown';
+}
+
+function consumeRateLimit(store, key, maxAttempts, windowMs) {
+    var now = Date.now();
+    if (store.size > 5000) {
+        store.forEach(function (value, storedKey) {
+            if (!value || now - value.startedAt >= windowMs) store.delete(storedKey);
+        });
+        if (store.size > 5000) store.delete(store.keys().next().value);
+    }
+    var state = store.get(key);
+    if (!state || now - state.startedAt >= windowMs) {
+        state = { count: 0, startedAt: now };
+    }
+    if (state.count >= maxAttempts) return false;
+    state.count += 1;
+    store.set(key, state);
+    return true;
+}
+
+function readJsonBody(req, maxBytes, cb) {
+    var chunks = [];
+    var size = 0;
+    var tooLarge = false;
+    req.on('data', function (chunk) {
+        size += chunk.length;
+        if (size > maxBytes) {
+            tooLarge = true;
+            return;
+        }
+        chunks.push(chunk);
+    });
+    req.on('end', function () {
+        if (tooLarge) return cb(Object.assign(new Error('Solicitud demasiado grande'), { statusCode: 413 }));
+        var raw = Buffer.concat(chunks).toString('utf8');
+        if (!raw) return cb(Object.assign(new Error('Cuerpo de solicitud vacío'), { statusCode: 400 }));
+        try { cb(null, JSON.parse(raw), raw); }
+        catch (e) { cb(Object.assign(new Error('JSON inválido'), { statusCode: 400 })); }
+    });
+    req.on('error', function (error) { cb(error); });
+}
+
+function cleanText(value, maxLength, allowNewlines) {
+    var text = String(value == null ? '' : value).replace(/<[^>]*>/g, '').trim();
+    text = allowNewlines
+        ? text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+        : text.replace(/[\u0000-\u001F\u007F]/g, ' ');
+    return text.slice(0, maxLength);
+}
+
+function validEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254;
+}
+
+function sendContactEmail(contact) {
+    return new Promise(function (resolve, reject) {
+        if (!RESEND_API_KEY || !CONTACT_FROM) {
+            return resolve({ ok: false, configuration: false, to: CONTACT_TO });
+        }
+        var text = [
+            'Nueva solicitud recibida desde la web de Tetra Studio',
+            '',
+            'Marca: ' + contact.brand,
+            'Email: ' + contact.email,
+            'Tipo de contenido: ' + contact.contentType,
+            'Categoría: ' + contact.category,
+            'Cantidad de creators: ' + contact.creatorCount,
+            'Presupuesto aproximado: ' + contact.budget,
+            'Fecha: ' + (contact.date || '-'),
+            '',
+            'Descripción:',
+            contact.description || '-'
+        ].join('\n');
+        var body = JSON.stringify({
+            from: CONTACT_FROM,
+            to: [CONTACT_TO],
+            reply_to: contact.email,
+            subject: 'Nueva solicitud de creator - ' + contact.brand,
+            text: text
+        });
+        var request = https.request({
+            hostname: 'api.resend.com',
+            port: 443,
+            path: '/emails',
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + RESEND_API_KEY,
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(body),
+                'User-Agent': 'Tetra-Studio/1.0'
+            }
+        }, function (response) {
+            var chunks = [];
+            response.on('data', function (chunk) { chunks.push(chunk); });
+            response.on('end', function () {
+                if (response.statusCode >= 200 && response.statusCode < 300) {
+                    return resolve({ ok: true, to: CONTACT_TO });
+                }
+                var detail = Buffer.concat(chunks).toString('utf8').slice(0, 300);
+                reject(new Error('Resend HTTP ' + response.statusCode + ': ' + detail));
+            });
+        });
+        request.on('error', reject);
+        request.setTimeout(15000, function () { request.destroy(new Error('Resend timeout')); });
+        request.write(body);
+        request.end();
     });
 }
 
@@ -140,15 +334,19 @@ function writeLocal(obj, cb) {
     }
 }
 
-function sendJson(res, code, obj) {
+function sendJson(res, code, obj, extraHeaders) {
     var body = JSON.stringify(obj);
-    res.writeHead(code, {
+    var headers = {
         'Content-Type': 'application/json; charset=utf-8',
         'Content-Length': Buffer.byteLength(body),
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-    });
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
+    };
+    Object.keys(extraHeaders || {}).forEach(function (key) { headers[key] = extraHeaders[key]; });
+    res.writeHead(code, headers);
     res.end(body);
 }
 
@@ -162,7 +360,11 @@ function sendStatic(res, filePath) {
     res.writeHead(200, {
         'Content-Type': type,
         'Content-Length': buf.length,
-        'Cache-Control': 'no-store'
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
     });
     res.end(buf);
 }
@@ -172,6 +374,20 @@ function safeResolve(urlPath) {
     try { decoded = decodeURIComponent(urlPath); } catch (e) { decoded = urlPath; }
     var normalized = path.normalize(decoded).replace(/^\\|^\/+/, '');
     if (!normalized) normalized = 'index.html';
+    var lower = normalized.toLowerCase();
+    var blockedFiles = {
+        'server.js': true,
+        'package.json': true,
+        'package-lock.json': true,
+        'render.yaml': true,
+        'security-setup.md': true,
+        'api.php': true,
+        'config.local.php': true,
+        'config.local.php.example': true
+    };
+    if (lower.split(/[\\/]/).some(function (part) { return part.charAt(0) === '.'; }) || blockedFiles[lower]) {
+        return null;
+    }
     var candidate = path.join(ROOT, normalized);
 
     var rel = path.relative(ROOT, candidate);
@@ -191,22 +407,99 @@ function safeResolve(urlPath) {
 
 var server = http.createServer(function (req, res) {
     var url = req.url || '/';
-    var q = url.indexOf('?');
-    var urlPath = q >= 0 ? url.slice(0, q) : url;
+    var parsedUrl;
+    try { parsedUrl = new URL(url, 'http://localhost'); }
+    catch (e) { return sendJson(res, 400, { error: 'URL inválida' }); }
+    var urlPath = parsedUrl.pathname;
+    var action = String(parsedUrl.searchParams.get('action') || '').toLowerCase();
 
-    // CORS preflight
     if (req.method === 'OPTIONS') {
         res.writeHead(204, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type'
+            'Allow': 'GET, POST, OPTIONS',
+            'X-Content-Type-Options': 'nosniff'
         });
         res.end();
         return;
     }
 
+    var isPhpApi = urlPath === '/api.php';
+    var isLoginRoute = (isPhpApi && action === 'login') || urlPath === '/api/auth/login';
+    var isSessionRoute = (isPhpApi && action === 'session') || urlPath === '/api/auth/session';
+    var isLogoutRoute = (isPhpApi && action === 'logout') || urlPath === '/api/auth/logout';
+    var isContactRoute = (isPhpApi && action === 'contact') || urlPath === '/api/contact';
+
+    if (isLoginRoute) {
+        if (req.method !== 'POST') return sendJson(res, 405, { error: 'Método no permitido' });
+        if (!ADMIN_PASSWORD || !ADMIN_SECRET) return sendJson(res, 503, { error: 'El acceso administrativo no está configurado' });
+        var loginKey = clientIp(req);
+        if (!consumeRateLimit(loginAttempts, loginKey, 5, 15 * 60 * 1000)) {
+            return sendJson(res, 429, { error: 'Demasiados intentos. Probá nuevamente en unos minutos' });
+        }
+        return readJsonBody(req, 4096, function (error, body) {
+            if (error) return sendJson(res, error.statusCode || 400, { error: error.message });
+            if (!body || !safeEqual(body.password, ADMIN_PASSWORD)) {
+                return sendJson(res, 401, { error: 'Contraseña incorrecta' });
+            }
+            loginAttempts.delete(loginKey);
+            var expiresAt = Date.now() + SESSION_SECONDS * 1000;
+            sendJson(res, 200, { ok: true, authenticated: true }, {
+                'Set-Cookie': sessionCookie(req, signAdminSession(expiresAt), SESSION_SECONDS)
+            });
+        });
+    }
+
+    if (isSessionRoute) {
+        if (req.method !== 'GET') return sendJson(res, 405, { error: 'Método no permitido' });
+        return sendJson(res, 200, { authenticated: isAdminAuthenticated(req) });
+    }
+
+    if (isLogoutRoute) {
+        if (req.method !== 'POST') return sendJson(res, 405, { error: 'Método no permitido' });
+        revokeAdminSession(req);
+        return sendJson(res, 200, { ok: true }, { 'Set-Cookie': sessionCookie(req, '', 0) });
+    }
+
+    if (isContactRoute) {
+        if (req.method !== 'POST') return sendJson(res, 405, { error: 'Método no permitido' });
+        return readJsonBody(req, 32768, function (error, body) {
+            if (error) return sendJson(res, error.statusCode || 400, { error: error.message });
+            body = body && typeof body === 'object' ? body : {};
+            if (body.website) return sendJson(res, 200, { ok: true });
+            if (!consumeRateLimit(contactAttempts, clientIp(req), 5, 10 * 60 * 1000)) {
+                return sendJson(res, 429, { error: 'Demasiadas solicitudes. Intentá nuevamente más tarde' });
+            }
+            var contact = {
+                brand: cleanText(body.brand, 120, false),
+                email: String(body.email || '').trim().toLowerCase(),
+                contentType: cleanText(body.contentType, 80, false),
+                category: cleanText(body.category, 80, false),
+                creatorCount: Math.max(1, Math.min(100, parseInt(body.creatorCount, 10) || 1)),
+                budget: cleanText(body.budget, 80, false),
+                date: cleanText(body.date, 20, false),
+                description: cleanText(body.description, 3000, true)
+            };
+            if (!contact.brand) return sendJson(res, 422, { error: 'Ingresá el nombre de la marca' });
+            if (!validEmail(contact.email)) return sendJson(res, 422, { error: 'Ingresá un email válido' });
+            if (contact.date && !/^\d{4}-\d{2}-\d{2}$/.test(contact.date)) {
+                return sendJson(res, 422, { error: 'La fecha no es válida' });
+            }
+            sendContactEmail(contact).then(function (delivery) {
+                if (!delivery.ok) {
+                    return sendJson(res, 503, {
+                        error: 'El formulario todavía no está configurado para enviar correos',
+                        fallbackEmail: delivery.to
+                    });
+                }
+                sendJson(res, 200, { ok: true, message: 'Solicitud enviada correctamente' });
+            }).catch(function (sendError) {
+                console.error('Contact email error:', sendError.message);
+                sendJson(res, 503, { error: 'No pudimos enviar la solicitud en este momento', fallbackEmail: CONTACT_TO });
+            });
+        });
+    }
+
     // API: GET /api/data y /api.php
-    if ((urlPath === '/api/data' || urlPath === '/api.php') && req.method === 'GET') {
+    if ((urlPath === '/api/data' || isPhpApi) && !action && req.method === 'GET') {
         readData(function (err, data) {
             if (err || data == null) {
                 sendJson(res, 404, { error: 'Sin datos guardados aún' });
@@ -218,18 +511,11 @@ var server = http.createServer(function (req, res) {
     }
 
     // API: POST /api/data y /api.php
-    if ((urlPath === '/api/data' || urlPath === '/api.php') && req.method === 'POST') {
-        var body = [];
-        req.on('data', function (chunk) { body.push(chunk); });
-        req.on('end', function () {
-            var raw = Buffer.concat(body).toString('utf8');
-            var parsed;
-            try { parsed = JSON.parse(raw); }
-            catch (e) {
-                sendJson(res, 400, { error: 'JSON inválido' });
-                return;
-            }
-            writeData(parsed, function (err) {
+    if ((urlPath === '/api/data' || isPhpApi) && !action && req.method === 'POST') {
+        if (!isAdminAuthenticated(req)) return sendJson(res, 401, { error: 'Sesión de administrador requerida' });
+        readJsonBody(req, 10 * 1024 * 1024, function (error, body, raw) {
+            if (error) return sendJson(res, error.statusCode || 400, { error: error.message });
+            writeData(body, function (err) {
                 if (err) {
                     console.error('CMS save error:', err.message);
                     sendJson(res, 500, { error: 'Error al escribir los datos' });
@@ -240,6 +526,11 @@ var server = http.createServer(function (req, res) {
             });
         });
         return;
+    }
+
+    // Nunca servir archivos internos como contenido estático.
+    if (isPhpApi || urlPath.indexOf('/api/') === 0) {
+        return sendJson(res, 404, { error: 'Endpoint no encontrado' });
     }
 
     // Redireccionamientos amigables y rutas de la web

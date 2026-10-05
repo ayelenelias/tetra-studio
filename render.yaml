@@ -14,3 +14,13 @@ services:
         sync: false
       - key: SUPABASE_KEY
         sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_SECRET
+        generateValue: true
+      - key: RESEND_API_KEY
+        sync: false
+      - key: CONTACT_TO
+        value: tetra.studio26@gmail.com
+      - key: CONTACT_FROM
+        sync: false

@@ -6,7 +6,6 @@
     'use strict';
 
     var STORAGE_KEY = 'tetra_cms';
-    var PASS = 'tetra2026';
     var SERVER_SAVE_DELAY = 400;
     var serverSaveTimer = null;
     var pendingServerPayload = null;
@@ -166,13 +165,56 @@
         return 'api.php';
     }
 
+    function getAuthUrl(action) {
+        return getApiUrl() + '?action=' + encodeURIComponent(action);
+    }
+
     function serverAvailable() {
         return typeof window.fetch === 'function';
+    }
+
+    function checkAdminSession() {
+        if (!serverAvailable()) return Promise.resolve(false);
+        return fetch(getAuthUrl('session'), { credentials: 'same-origin' })
+            .then(function(response) {
+                if (!response.ok) return false;
+                return response.json().then(function(data) { return !!data.authenticated; });
+            })
+            .catch(function() { return false; });
+    }
+
+    function requestAdminLogin(password) {
+        return fetch(getAuthUrl('login'), {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: password })
+        }).then(function(response) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                if (!response.ok || !data.authenticated) {
+                    var error = new Error(data.error || 'No se pudo iniciar sesión');
+                    error.status = response.status;
+                    throw error;
+                }
+                return true;
+            });
+        });
+    }
+
+    function requestAdminLogout() {
+        return fetch(getAuthUrl('logout'), {
+            method: 'POST',
+            credentials: 'same-origin'
+        }).then(function(response) {
+            if (!response.ok) throw new Error('No se pudo cerrar la sesión');
+            return true;
+        });
     }
 
     function postToServer(url, payload) {
         return fetch(url, {
             method: 'POST',
+            credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json' },
             body: payload
         }).then(function(r) {
@@ -246,11 +288,11 @@
     }
 
     function fetchServerData() {
-        return fetch(getApiUrl()).then(function(r) {
+        return fetch(getApiUrl(), { credentials: 'same-origin' }).then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status + ' en ' + getApiUrl());
             return r.json();
         }).catch(function(primaryError) {
-            return fetch('/api/data').then(function(r) {
+            return fetch('/api/data', { credentials: 'same-origin' }).then(function(r) {
                 if (!r.ok) throw new Error('HTTP ' + r.status + ' en /api/data');
                 return r.json();
             }).catch(function() {
@@ -587,12 +629,20 @@
         var cleanPhone = (D.contact && D.contact.whatsapp) ? String(D.contact.whatsapp).replace(/[^0-9]/g, '') : '5493815456354';
         var waUrl = 'https://wa.me/' + cleanPhone;
 
-        var contactHablemos = $('.contact__btn-whatsapp, .contact__btn-email');
+        var contactHablemos = $('.contact__btn-whatsapp');
         if (contactHablemos) {
             contactHablemos.href = waUrl;
             contactHablemos.target = '_blank';
             contactHablemos.rel = 'noopener';
         }
+
+        var contactEmail = (D.contact && D.contact.email) ? String(D.contact.email).trim() : 'tetra.studio26@gmail.com';
+        $$('.contact-email-link').forEach(function(emailLink) {
+            emailLink.href = 'mailto:' + contactEmail;
+            emailLink.textContent = contactEmail;
+        });
+        var creatorForm = $('#creatorForm');
+        if (creatorForm) creatorForm.dataset.recipient = contactEmail;
 
         var headerCta = $('.header__cta');
         if (headerCta) {
@@ -664,6 +714,7 @@
         var bodyEl = h('div', {className: 'admin-body', id: 'adminBody'});
 
         var footerEl = h('div', {className: 'admin-footer'}, [
+            h('button', {className: 'admin-btn admin-btn--secondary', id: 'adminLogoutBtn', textContent: 'CERRAR SESIÓN'}),
             h('button', {className: 'admin-btn admin-btn--primary admin-btn--full', id: 'adminSaveBtn', textContent: 'GUARDAR CAMBIOS'})
         ]);
 
@@ -953,26 +1004,47 @@
         // Load initial tab
         ui.bodyEl.innerHTML = renderTabContent('hero');
 
+        // Recuperar una sesión válida sin almacenar contraseñas en el navegador.
+        checkAdminSession().then(function(authenticated) {
+            if (authenticated) loggedIn = true;
+        });
+
         // ─── LOGIN ───
         ui.triggerEl.addEventListener('click', function () {
             if (loggedIn) { openPanel(); return; }
-            ui.loginEl.classList.add('active');
-            $('#adminPass').value = '';
-            $('#adminError').classList.remove('show');
-            setTimeout(function () { $('#adminPass').focus(); }, 300);
+            checkAdminSession().then(function(authenticated) {
+                loggedIn = authenticated;
+                if (loggedIn) { openPanel(); return; }
+                ui.loginEl.classList.add('active');
+                $('#adminPass').value = '';
+                $('#adminError').classList.remove('show');
+                setTimeout(function () { $('#adminPass').focus(); }, 300);
+            });
         });
 
         $('#adminLoginBtn').addEventListener('click', doLogin);
         $('#adminPass').addEventListener('keydown', function(e) { if (e.key==='Enter') doLogin(); });
 
         function doLogin() {
-            if ($('#adminPass').value === PASS) {
+            var password = $('#adminPass').value;
+            var button = $('#adminLoginBtn');
+            var errorEl = $('#adminError');
+            if (!password || button.disabled) return;
+            button.disabled = true;
+            button.textContent = 'VERIFICANDO...';
+            errorEl.classList.remove('show');
+            requestAdminLogin(password).then(function() {
                 loggedIn = true;
+                $('#adminPass').value = '';
                 ui.loginEl.classList.remove('active');
                 openPanel();
-            } else {
-                $('#adminError').classList.add('show');
-            }
+            }).catch(function(error) {
+                errorEl.textContent = error.message || 'No se pudo iniciar sesión';
+                errorEl.classList.add('show');
+            }).then(function() {
+                button.disabled = false;
+                button.textContent = 'ENTRAR';
+            });
         }
 
         // ─── KEYBOARD SHORTCUT ───
@@ -1030,6 +1102,20 @@
                 } else {
                     showStatus('Error: no se pudo guardar', true);
                 }
+            });
+        });
+
+        $('#adminLogoutBtn').addEventListener('click', function() {
+            var button = this;
+            button.disabled = true;
+            requestAdminLogout().then(function() {
+                loggedIn = false;
+                closePanel();
+                showStatus('Sesión cerrada ✓');
+            }).catch(function(error) {
+                showStatus(error.message, true);
+            }).then(function() {
+                button.disabled = false;
             });
         });
 

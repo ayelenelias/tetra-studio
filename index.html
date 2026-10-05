@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.1">
-    <link rel="stylesheet" href="admin.css?v=2.1">
+    <link rel="stylesheet" href="styles.css?v=3.0">
+    <link rel="stylesheet" href="admin.css?v=3.0">
 </head>
 <body>
 
@@ -270,21 +270,25 @@
         <div class="modal__content">
             <button class="modal__close" id="modalClose">&times;</button>
             <h3 class="modal__title">SOLICITAR CREATOR</h3>
-            <form class="modal__form" id="creatorForm">
+            <p class="modal__contact">Complet&aacute; los datos y enviaremos tu solicitud a <a href="mailto:tetra.studio26@gmail.com" class="contact-email-link">tetra.studio26@gmail.com</a>.</p>
+            <form class="modal__form" id="creatorForm" data-recipient="tetra.studio26@gmail.com">
+                <div class="form-honeypot" aria-hidden="true">
+                    <label>Sitio web <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>NOMBRE DE LA MARCA</label>
-                        <input type="text" required>
+                        <input type="text" name="brand" autocomplete="organization" required>
                     </div>
                     <div class="form-group">
                         <label>EMAIL</label>
-                        <input type="email" required>
+                        <input type="email" name="email" autocomplete="email" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>TIPO DE CONTENIDO</label>
-                        <select>
+                        <select name="contentType">
                             <option value="todo">Todo</option>
                             <option>UGC</option>
                             <option>Reels</option>
@@ -297,7 +301,7 @@
                     </div>
                     <div class="form-group">
                         <label>CATEGOR&Iacute;A</label>
-                        <select>
+                        <select name="category">
                             <option value="todos">Todos / Cualquier categor&iacute;a</option>
                             <option>Fashion</option>
                             <option>Beauty</option>
@@ -314,11 +318,11 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>CANTIDAD DE CREATORS</label>
-                        <input type="number" min="1" value="1">
+                        <input type="number" name="creatorCount" min="1" value="1">
                     </div>
                     <div class="form-group">
                         <label>PRESUPUESTO APROXIMADO</label>
-                        <select>
+                        <select name="budget">
                             <option>Menos de $100.000</option>
                             <option>$100.000 - $300.000</option>
                             <option>$300.000 - $500.000</option>
@@ -328,13 +332,14 @@
                 </div>
                 <div class="form-group">
                     <label>FECHA</label>
-                    <input type="date">
+                    <input type="date" name="date">
                 </div>
                 <div class="form-group">
                     <label>DESCRIPCI&Oacute;N DEL PROYECTO</label>
-                    <textarea rows="4"></textarea>
+                    <textarea name="description" rows="4"></textarea>
                 </div>
-                <button type="submit" class="btn btn--primary btn--full">ENVIAR SOLICITUD <span>&rarr;</span></button>
+                <button type="submit" class="btn btn--primary btn--full" id="creatorSubmitBtn">ENVIAR SOLICITUD <span>&rarr;</span></button>
+                <p class="form-status" id="creatorFormStatus" role="status" aria-live="polite"></p>
             </form>
         </div>
     </div>
@@ -521,7 +526,8 @@
                 <span>JUNTOS.</span>
             </h2>
             <p class="contact__text" data-reveal data-delay="200">&iquest;Ten&eacute;s una idea, una marca o un proyecto?</p>
-            <a href="https://wa.me/5493815456354" target="_blank" rel="noopener" class="btn btn--white btn--large contact__btn-whatsapp contact__btn-email" data-reveal data-delay="300">HABLEMOS <span>&rarr;</span></a>
+            <a href="https://wa.me/5493815456354" target="_blank" rel="noopener" class="btn btn--white btn--large contact__btn-whatsapp" data-reveal data-delay="300">HABLEMOS <span>&rarr;</span></a>
+            <a href="mailto:tetra.studio26@gmail.com" class="contact__email contact-email-link" data-reveal data-delay="325">tetra.studio26@gmail.com</a>
             <div class="contact__divider" data-reveal data-delay="350"></div>
             <p class="contact__text" data-reveal data-delay="400">LOOKING FOR A CREATOR?</p>
             <a href="#creators" class="btn btn--outline-white btn--large" data-reveal data-delay="450" id="contactFindCreatorBtn">FIND YOUR CREATOR <span>&rarr;</span></a>
@@ -559,7 +565,7 @@
         </div>
     </footer>
 
-    <script src="script.js?v=2.1"></script>
-    <script src="admin.js?v=2.2"></script>
+    <script src="script.js?v=3.0"></script>
+    <script src="admin.js?v=3.0"></script>
 </body>
 </html>

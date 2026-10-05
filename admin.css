@@ -205,6 +205,9 @@
     border-top: 1px solid rgba(0,0,0,0.08);
     background: white;
     flex-shrink: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
 }
 
 .admin-section {

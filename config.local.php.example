@@ -1,0 +1,11 @@
+<?php
+/*
+ * Copiá este archivo como config.local.php para usar el backend PHP/XAMPP.
+ * config.local.php está ignorado por Git y nunca debe publicarse.
+ */
+return [
+    'admin_password' => 'CAMBIAR_POR_UNA_CLAVE_SEGURA',
+    'resend_api_key' => '',
+    'contact_to' => 'tetra.studio26@gmail.com',
+    'contact_from' => 'Tetra Studio <contacto@tu-dominio.com>',
+];

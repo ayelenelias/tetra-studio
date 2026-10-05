@@ -1127,13 +1127,72 @@ button {
     font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: 0.1em;
-    margin-bottom: 40px;
+    margin-bottom: 12px;
+}
+
+.modal__contact {
+    color: var(--grey);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+.modal__contact a {
+    color: var(--black);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .modal__form {
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.form-honeypot {
+    height: 1px;
+    left: -10000px;
+    overflow: hidden;
+    position: absolute;
+    top: auto;
+    width: 1px;
+}
+
+.form-status {
+    display: none;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    margin-top: -4px;
+    text-align: center;
+}
+
+.form-status:not(:empty) {
+    display: block;
+}
+
+.form-status--pending {
+    color: var(--grey-dark);
+}
+
+.form-status--success {
+    color: #247a3b;
+}
+
+.form-status--error {
+    color: #a52626;
+}
+
+.form-status a {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+#creatorSubmitBtn:disabled {
+    cursor: wait;
+    opacity: 0.65;
 }
 
 .form-row {
@@ -1622,6 +1681,23 @@ button {
     color: var(--grey);
     margin-bottom: 32px;
     line-height: 1.7;
+}
+
+.contact__email {
+    color: white;
+    display: block;
+    font-size: clamp(0.8rem, 1.2vw, 1rem);
+    letter-spacing: 0.04em;
+    margin: 22px auto 0;
+    overflow-wrap: anywhere;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+    transition: opacity 0.25s ease;
+    width: fit-content;
+}
+
+.contact__email:hover {
+    opacity: 0.65;
 }
 
 .contact__divider {

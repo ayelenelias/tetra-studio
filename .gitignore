@@ -5,6 +5,11 @@ node_modules/
 *.log
 npm-debug.log*
 
+# Configuración privada local (contraseñas y claves de servicios)
+config.local.php
+.env
+.env.local
+
 # Bases de datos locales del backend
 # OJO: data.json es el alma del CMS. Si NO lo incluís,
 # cada deploy de Render lo perderá (disco efímero).

@@ -183,12 +183,78 @@
     if (modalClose) modalClose.addEventListener('click', closeModal);
     if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
 
+    function postCreatorRequest(url, payload) {
+        return fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (data) {
+                if (!response.ok) {
+                    const error = new Error(data.error || 'No pudimos enviar la solicitud');
+                    error.status = response.status;
+                    error.fallbackEmail = data.fallbackEmail || '';
+                    throw error;
+                }
+                return data;
+            });
+        });
+    }
+
+    function sendCreatorRequest(payload) {
+        return postCreatorRequest('api.php?action=contact', payload).catch(function (primaryError) {
+            if (primaryError.status !== 404) throw primaryError;
+            return postCreatorRequest('/api/contact', payload);
+        });
+    }
+
+    function showCreatorFormStatus(message, type, fallbackEmail) {
+        const status = document.getElementById('creatorFormStatus');
+        if (!status) return;
+        status.className = 'form-status' + (type ? ' form-status--' + type : '');
+        status.textContent = message || '';
+        if (fallbackEmail) {
+            status.appendChild(document.createTextNode(' '));
+            const link = document.createElement('a');
+            link.href = 'mailto:' + fallbackEmail;
+            link.textContent = fallbackEmail;
+            status.appendChild(link);
+        }
+    }
+
     if (creatorForm) {
         creatorForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            alert('¡Solicitud enviada correctamente! Nos pondremos en contacto a la brevedad.');
-            closeModal();
-            this.reset();
+            const formData = new FormData(this);
+            const submitButton = document.getElementById('creatorSubmitBtn');
+            const form = this;
+            const payload = {
+                brand: String(formData.get('brand') || '').trim(),
+                email: String(formData.get('email') || '').trim(),
+                contentType: formData.get('contentType') || '',
+                category: formData.get('category') || '',
+                creatorCount: formData.get('creatorCount') || '1',
+                budget: formData.get('budget') || '',
+                date: formData.get('date') || '',
+                description: formData.get('description') || '',
+                website: formData.get('website') || ''
+            };
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'ENVIANDO...';
+            showCreatorFormStatus('Estamos enviando tu solicitud...', 'pending');
+
+            sendCreatorRequest(payload).then(function () {
+                form.reset();
+                showCreatorFormStatus('¡Solicitud enviada! Te responderemos a la brevedad.', 'success');
+            }).catch(function (error) {
+                const fallback = error.fallbackEmail || form.dataset.recipient || 'tetra.studio26@gmail.com';
+                showCreatorFormStatus(error.message + '. También podés escribirnos a', 'error', fallback);
+            }).then(function () {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'ENVIAR SOLICITUD <span>&rarr;</span>';
+            });
         });
     }
 
