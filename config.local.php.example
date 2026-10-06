@@ -1,11 +1,30 @@
 <?php
 /*
- * Copiá este archivo como config.local.php para usar el backend PHP/XAMPP.
- * config.local.php está ignorado por Git y nunca debe publicarse.
+ * HOSTINGER:
+ *   Copiá este contenido en ../private/tetra-config.php, fuera de public_html.
+ * XAMPP:
+ *   Copialo como config.local.php dentro del proyecto.
+ *
+ * Nunca subas el archivo real a Git ni compartas sus claves por chat.
  */
 return [
-    'admin_password' => 'CAMBIAR_POR_UNA_CLAVE_SEGURA',
+    // Acceso al panel TETRA CMS.
+    'admin_password' => 'CAMBIAR_POR_UNA_CLAVE_LARGA_Y_UNICA',
+
+    // Base creada previamente desde hPanel. Usá los valores exactos de Hostinger.
+    'db_host' => 'localhost',
+    'db_port' => '3306',
+    'db_name' => 'u123456789_tetra',
+    'db_user' => 'u123456789_tetra',
+    'db_password' => 'CAMBIAR_POR_LA_CLAVE_DE_MYSQL',
+    'db_required' => true,
+    'db_auto_create' => false,
+    'db_persistent' => true,
+    'write_file_backup' => false,
+
+    // Formulario de contacto. CONTACT_FROM debe usar un dominio verificado.
     'resend_api_key' => '',
     'contact_to' => 'tetra.studio26@gmail.com',
     'contact_from' => 'Tetra Studio <contacto@tu-dominio.com>',
+    'email_required' => true,
 ];

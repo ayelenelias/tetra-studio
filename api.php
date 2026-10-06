@@ -16,10 +16,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $localConfig = [];
-$localConfigPath = __DIR__ . DIRECTORY_SEPARATOR . 'config.local.php';
-if (is_file($localConfigPath)) {
+$configCandidates = [];
+$explicitConfigPath = getenv('TETRA_CONFIG_PATH');
+if ($explicitConfigPath !== false && $explicitConfigPath !== '') {
+    $configCandidates[] = $explicitConfigPath;
+}
+
+// En hosting compartido, el lugar recomendado es ../private/tetra-config.php,
+// fuera de public_html. El archivo dentro del proyecto se conserva para XAMPP.
+$configCandidates[] = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'private' . DIRECTORY_SEPARATOR . 'tetra-config.php';
+$configCandidates[] = __DIR__ . DIRECTORY_SEPARATOR . 'config.local.php';
+
+foreach (array_unique($configCandidates) as $localConfigPath) {
+    if (!is_file($localConfigPath)) continue;
     $loadedConfig = require $localConfigPath;
-    if (is_array($loadedConfig)) $localConfig = $loadedConfig;
+    if (is_array($loadedConfig)) {
+        $localConfig = $loadedConfig;
+        break;
+    }
 }
 
 function configValue($envName, $localKey, $default = '') {
@@ -28,6 +42,13 @@ function configValue($envName, $localKey, $default = '') {
     if ($envValue !== false && $envValue !== '') return $envValue;
     if (isset($localConfig[$localKey]) && $localConfig[$localKey] !== '') return $localConfig[$localKey];
     return $default;
+}
+
+function configBool($envName, $localKey, $default = false) {
+    $value = configValue($envName, $localKey, $default);
+    if (is_bool($value)) return $value;
+    $parsed = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+    return $parsed === null ? (bool) $default : $parsed;
 }
 
 function sendJsonResponse($status, $payload) {
@@ -262,23 +283,33 @@ if ($action === 'contact') {
 if ($method === 'POST') requireAdmin();
 if ($method !== 'GET' && $method !== 'POST') sendJsonResponse(405, ['error' => 'Método no permitido']);
 
-$dbHost = getenv('DB_HOST') ?: 'localhost';
-$dbPort = getenv('DB_PORT') ?: '3306';
-$dbName = getenv('DB_NAME') ?: 'tetra_cms';
-$dbUser = getenv('DB_USER') ?: 'root';
-$dbPass = getenv('DB_PASS') !== false ? getenv('DB_PASS') : '';
+$dbHost = (string) configValue('DB_HOST', 'db_host', 'localhost');
+$dbPort = (string) configValue('DB_PORT', 'db_port', '3306');
+$dbName = (string) configValue('DB_NAME', 'db_name', 'tetra_cms');
+$dbUser = (string) configValue('DB_USER', 'db_user', 'root');
+$dbPass = (string) configValue('DB_PASS', 'db_password', '');
+$dbRequired = configBool('DB_REQUIRED', 'db_required', false);
+$dbAutoCreate = configBool('DB_AUTO_CREATE', 'db_auto_create', false);
+$dbPersistent = configBool('DB_PERSISTENT', 'db_persistent', false);
+$writeFileBackup = configBool('WRITE_FILE_BACKUP', 'write_file_backup', true);
+$emailRequired = configBool('EMAIL_REQUIRED', 'email_required', false);
 if (!preg_match('/^[A-Za-z0-9_]+$/', $dbName)) sendJsonResponse(500, ['error' => 'Configuración de base de datos inválida']);
 
 $dataFile = __DIR__ . DIRECTORY_SEPARATOR . 'data.json';
 $pdo = null;
 try {
-    $pdoInit = new PDO("mysql:host={$dbHost};port={$dbPort};charset=utf8mb4", $dbUser, $dbPass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    ]);
-    $pdoInit->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    // Hostinger crea la base desde hPanel. Solo XAMPP debería usar db_auto_create.
+    if ($dbAutoCreate) {
+        $pdoInit = new PDO("mysql:host={$dbHost};port={$dbPort};charset=utf8mb4", $dbUser, $dbPass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]);
+        $pdoInit->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    }
+
     $pdo = new PDO("mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset=utf8mb4", $dbUser, $dbPass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_PERSISTENT => $dbPersistent,
     ]);
     $pdo->exec("CREATE TABLE IF NOT EXISTS `tetra_data` (
         `id` INT PRIMARY KEY DEFAULT 1,
@@ -287,6 +318,25 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 } catch (Exception $error) {
     error_log('Error conexión MySQL: ' . $error->getMessage());
+}
+
+if ($action === 'health') {
+    if ($method !== 'GET') sendJsonResponse(405, ['error' => 'Método no permitido']);
+    $adminConfigured = configValue('ADMIN_PASSWORD', 'admin_password') !== '';
+    $emailConfigured = configValue('RESEND_API_KEY', 'resend_api_key') !== '' &&
+        configValue('CONTACT_FROM', 'contact_from') !== '';
+    $healthy = $pdo !== null && $adminConfigured && (!$emailRequired || $emailConfigured);
+    sendJsonResponse($healthy ? 200 : 503, [
+        'ok' => $healthy,
+        'database' => $pdo !== null,
+        'admin' => $adminConfigured,
+        'email' => $emailConfigured,
+        'php' => PHP_VERSION,
+    ]);
+}
+
+if ($dbRequired && !$pdo) {
+    sendJsonResponse(503, ['error' => 'La base de datos del sitio no está disponible']);
 }
 
 if ($method === 'GET') {
@@ -309,6 +359,7 @@ if ($method === 'GET') {
             }
         } catch (Exception $error) {
             error_log('Error leyendo MySQL: ' . $error->getMessage());
+            if ($dbRequired) sendJsonResponse(503, ['error' => 'No se pudieron leer los datos del sitio']);
         }
     }
     if (is_file($dataFile)) {
@@ -323,10 +374,13 @@ if ($pdo) {
     try {
         $stmt = $pdo->prepare('INSERT INTO tetra_data (id, data, updated_at) VALUES (1, :data, NOW()) ON DUPLICATE KEY UPDATE data = :data, updated_at = NOW()');
         $stmt->execute([':data' => $raw]);
-        @file_put_contents($dataFile, json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        if ($writeFileBackup) {
+            @file_put_contents($dataFile, json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }
         sendJsonResponse(200, ['ok' => true, 'source' => 'mysql']);
     } catch (Exception $error) {
         error_log('Error guardando MySQL: ' . $error->getMessage());
+        if ($dbRequired) sendJsonResponse(503, ['error' => 'No se pudieron guardar los cambios en la base de datos']);
     }
 }
 

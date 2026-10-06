@@ -1,4 +1,6 @@
-Options -Indexes
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
 RewriteEngine On
 RewriteRule (^|/)\. - [F,L]
 
@@ -9,7 +11,7 @@ RewriteRule (^|/)\. - [F,L]
     Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>
 
-# Los secretos locales se cargan desde PHP, pero nunca deben descargarse.
-<FilesMatch "^(config\.local\.php|config\.local\.php\.example|SECURITY-SETUP\.md)$">
+# Archivos de configuración, backend alternativo y documentación interna.
+<FilesMatch "^(config\.local\.php|config\.local\.php\.example|SECURITY-SETUP\.md|HOSTINGER-SETUP\.md|database\.sql|data\.json|server\.js|render\.yaml|package(-lock)?\.json)$">
     Require all denied
 </FilesMatch>
