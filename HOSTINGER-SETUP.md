@@ -7,6 +7,7 @@
 - MySQL con PDO y `pdo_mysql`.
 - `.htaccess` / reglas Apache o LiteSpeed.
 - Sesiones PHP, cURL u conexiones HTTPS salientes.
+- Solicitudes JSON de hasta 10 MB (`post_max_size` recomendado: 16 MB o más).
 - Git desde GitHub o acceso al administrador de archivos.
 - SSL para forzar HTTPS.
 
@@ -95,4 +96,4 @@ Luego verificar:
 
 ## Mensaje para soporte de Hostinger
 
-> Hola. Quiero publicar un sitio personalizado que ya está desarrollado. Usa HTML, CSS y JavaScript en el frontend, y PHP 8.2+ con PDO MySQL, sesiones PHP, `.htaccess` y solicitudes HTTPS salientes mediante cURL en el backend. Necesito una base MySQL, SSL y poder desplegar desde un repositorio GitHub a `public_html`. No usa WordPress y no necesita Node.js ni VPS. ¿Mi plan actual permite todo esto? ¿Incluye Git deployment desde GitHub, creación de una base y usuario MySQL, PDO/pdo_mysql, cURL, sesiones PHP, `.htaccess`, SSL, un directorio privado fuera de `public_html` y copias de seguridad? ¿Cuántas bases MySQL permite, qué versión de PHP puedo elegir y con qué frecuencia se hacen los backups? Si algo no está incluido, ¿qué función exacta falta y cuál es el plan mínimo necesario?
+> Hola. Quiero publicar un sitio personalizado que ya está desarrollado. Usa HTML, CSS y JavaScript en el frontend, y PHP 8.2+ con PDO MySQL, sesiones PHP, `.htaccess` y solicitudes HTTPS salientes mediante cURL en el backend. Necesito una base MySQL, SSL y poder desplegar desde un repositorio GitHub a `public_html`. El panel envía JSON y necesita aceptar solicitudes POST de hasta 10 MB (`post_max_size` de 16 MB o más). No usa WordPress y no necesita Node.js ni VPS. ¿Mi plan actual permite todo esto? ¿Incluye Git deployment desde GitHub, creación de una base y usuario MySQL, PDO/pdo_mysql, cURL, sesiones PHP, `.htaccess`, SSL, un directorio privado fuera de `public_html` y copias de seguridad? ¿Cuántas bases MySQL permite, qué versión de PHP puedo elegir, cuál es el límite de `post_max_size` y con qué frecuencia se hacen los backups? Si algo no está incluido, ¿qué función exacta falta y cuál es el plan mínimo necesario?
